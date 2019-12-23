@@ -1,0 +1,26 @@
+function DrawDebug {
+
+	local velocity_vec to vecdraw(
+			V(0, 0, 0), 
+			ship:velocity:surface, 
+			rgb(1, 0, 0),
+			"Surface Velocity",
+			1.0,
+			true).
+
+	local position_vec to vecdraw(
+			-ship:body:position,
+			ship:body:position,
+			rgb(0, 1, 0),
+			"Position",
+			1.0,
+			true).
+	
+	function run {
+		
+
+		
+	}
+
+	return lexicon("run", run@).
+}

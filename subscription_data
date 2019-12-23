@@ -1,0 +1,35 @@
+// Data that stores subscribed data. 
+@lazyglobal off.
+
+run once publish_subscribe.
+
+function SubscriptionData {
+	parameter topic.
+
+	local data is 0.
+	local data_updated is false.
+
+	function callback {
+		parameter new_data.
+
+		set data to new_data.
+		set data_updated to true.
+	}
+
+	local subscriber is PublishSubscribe().
+	subscriber:subscribe(topic, callback@).
+
+	function get {
+		set data_updated to false.
+		return data.
+	}
+
+	function is_updated {
+		return data_updated.
+	}
+
+	return lexicon(
+		"get", get@,
+		"is_updated", is_updated@
+		).
+}

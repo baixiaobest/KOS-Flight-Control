@@ -1,0 +1,20 @@
+// Main flight control loop
+@lazyglobal off.
+run once scheduler.
+run once publish_subscribe.
+run once messages.
+run once thrust_attitude_control.
+run once draw_debug.
+
+local scheduler_obj is Scheduler(). 
+local pub_sub is PublishSubscribe().
+local thrust_attitude_control to ThrustAttitudeControl().
+local draw_debug to DrawDebug().
+
+scheduler_obj:add_module("thrust_attitude_control", thrust_attitude_control, 10).
+scheduler_obj:add_module("draw_debug", draw_debug, 10).
+
+until false {
+  pub_sub:publish("acceleration_setpoint", AccelerationSetpointMSG(Ship:facing * V(0, 0, 10))).
+  scheduler_obj:run().
+}

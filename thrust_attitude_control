@@ -1,0 +1,57 @@
+@lazyglobal off.
+
+run once subscription_data.
+run once vehicle_parameters.
+
+function ThrustAttitudeControl {
+  // Subscriptions.
+  local thrust_sp_sub is SubscriptionData("acceleration_setpoint").
+  local throttle_sp is 0.
+  local last_time is time:seconds.
+
+  function run {
+    clearscreen.
+    // Get current thrust in newton from throttle.
+    local curr_thrust_mag is throttle * ship:maxthrust * 1e3.
+    local curr_thrust is SHIP:FACING * V(0, 0, 1) * curr_thrust_mag.
+    // Acceleration due to thrust.
+    local curr_thrust_acc is curr_thrust / (ship:mass * 1e3).
+    print "Current acc: " + ship:sensors:acc:mag.
+
+    // Acceleration setpoint.
+    local acc_sp is thrust_sp_sub:get():acceleration.
+    print "Setpoint acc: " + acc_sp:mag.
+
+    // Calculate needed additional thrust.
+    local sp_curr_acc_diff is acc_sp - ship:sensors:acc.
+    local additional_thrust is sp_curr_acc_diff * (ship:mass * 1e3).
+
+    print "setpoint acc diff: " + sp_curr_acc_diff.
+
+    // New thrust and throttle.
+    // Low pass filter the new throttle.
+    local interval is time:seconds - last_time.
+    local new_thrust is curr_thrust + additional_thrust * vehicle_params:TAC:KP.
+    local new_throttle is 0.
+    if ship:maxthrust = 0 {
+      set new_throttle to 0.
+    }
+    else {
+      set new_throttle to min(1, new_thrust:mag / (ship:maxthrust * 1e3)).
+    }
+    print "Current thrust: " + curr_thrust:mag / 1e3 + " kN".
+    print "New thrust: " + new_thrust:mag / 1e3 + " kN".
+
+    set throttle to new_throttle.
+    // Attitude control.
+    set steering to angleaxis(0, new_thrust).
+
+    set last_time to time:seconds.
+  
+    return 0.
+  }
+
+  return lexicon (
+    "run", run@
+  ).
+}

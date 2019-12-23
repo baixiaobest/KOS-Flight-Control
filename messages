@@ -1,0 +1,7 @@
+@lazyglobal off.
+
+function AccelerationSetpointMSG {
+	parameter acceleration is V(0, 0, 0).
+
+	return lexicon("acceleration", acceleration).
+}
