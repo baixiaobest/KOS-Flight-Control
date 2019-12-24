@@ -1,7 +1,7 @@
 @lazyglobal off.
 
 local thrust_attitude_control_params is lexicon(
-	"KP", 0.8,
+	"KP", 1,
 	"KI", 0.5,
 	"KD", 0).
 

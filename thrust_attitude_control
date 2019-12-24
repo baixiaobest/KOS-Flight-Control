@@ -8,45 +8,89 @@ function ThrustAttitudeControl {
   local thrust_sp_sub is SubscriptionData("acceleration_setpoint").
   local throttle_sp is 0.
   local last_time is time:seconds.
+  local pub_sub is PublishSubscribe().
+  local thrust_integral is V(0, 0, 0).
+
+  function get_throttle_from_thrust {
+    parameter thrust.
+
+    local throttle is 0.
+    if ship:maxthrust = 0 {
+      set throttle to 0.
+    }
+    else {
+      set throttle to min(1, thrust:mag / (ship:maxthrust * 1e3)).
+    }
+
+    return throttle.
+  }
+
+  function combine_two_thrust {
+    parameter thrust_0.
+    parameter thrust_1.
+
+    local combined_thrust is thrust_0 + thrust_1.
+    local maximum_thrust is choose ship:maxthrust * 1e3 if ship:maxthrust > 0 else 1.
+    if (combined_thrust:mag < maximum_thrust) {
+      return combined_thrust.
+    }
+    else if (thrust_0:mag > maximum_thrust) {
+      return thrust_0:normalized * maximum_thrust.
+    }
+    else if ((thrust_0 - thrust_1):mag < 0.001) {
+      return thrust_0:normalized * maximum_thrust.
+    }
+    else if (thrust_1:mag:mag < 0.001) {
+      return thrust_0:normalized * min(thrust_0:mag, maximum_thrust).
+    }
+    else if (thrust_0:mag < 0.001) {
+      return thrust_1:normalized * min(thrust_0:mag, maximum_thrust).
+    }
+    // Prioritize thrust_0 until thrust is saturated.
+    else {
+      local a is thrust_1 * thrust_1.
+      local b is thrust_0 * thrust_1.
+      local c is thrust_0 * thrust_0 - (maximum_thrust)^2.
+      local alpha is (-b + sqrt(b^2 - 4 * a * c)) / (2 * a).
+      return thrust_0 + alpha * thrust_1.
+
+      // local u1 is thrust_1:normalized.
+      // local m is u1 * thrust_0.
+      // local c is thrust_0 * thrust_0 - (maximum_thrust)^2.
+      // local s is -m + sqrt(m * m - c).
+      // return thrust_0 + u1 * s.
+    }
+  }
 
   function run {
-    clearscreen.
     // Get current thrust in newton from throttle.
     local curr_thrust_mag is throttle * ship:maxthrust * 1e3.
     local curr_thrust is SHIP:FACING * V(0, 0, 1) * curr_thrust_mag.
     // Acceleration due to thrust.
     local curr_thrust_acc is curr_thrust / (ship:mass * 1e3).
-    print "Current acc: " + ship:sensors:acc:mag.
 
-    // Acceleration setpoint.
+    // Acceleration/thrust due to drag and gravity.
+    local g_drag_acc is ship:sensors:grav.
+    local g_drag_thrust is g_drag_acc * ship:mass * 1e3.
+    
+    // Acceleration/thrust setpoint.
     local acc_sp is thrust_sp_sub:get():acceleration.
-    print "Setpoint acc: " + acc_sp:mag.
+    local acc_sp_thrust is acc_sp * ship:mass * 1e3.
 
-    // Calculate needed additional thrust.
-    local sp_curr_acc_diff is acc_sp - ship:sensors:acc.
-    local additional_thrust is sp_curr_acc_diff * (ship:mass * 1e3).
+    // Desired thrust that counter gravity and drag and try it best
+    // to acheive acceleration setpoint.
+    local acc_error_thrust is (acc_sp - ship:sensors:acc) * ship:mass * 1e3.
+    local desired_thrust is combine_two_thrust(-g_drag_thrust, acc_sp_thrust + acc_error_thrust * vehicle_params:TAC:KP).
 
-    print "setpoint acc diff: " + sp_curr_acc_diff.
-
-    // New thrust and throttle.
-    // Low pass filter the new throttle.
-    local interval is time:seconds - last_time.
-    local new_thrust is curr_thrust + additional_thrust * vehicle_params:TAC:KP.
-    local new_throttle is 0.
-    if ship:maxthrust = 0 {
-      set new_throttle to 0.
-    }
-    else {
-      set new_throttle to min(1, new_thrust:mag / (ship:maxthrust * 1e3)).
-    }
-    print "Current thrust: " + curr_thrust:mag / 1e3 + " kN".
-    print "New thrust: " + new_thrust:mag / 1e3 + " kN".
-
-    set throttle to new_throttle.
+    set throttle to get_throttle_from_thrust(desired_thrust).
     // Attitude control.
-    set steering to angleaxis(0, new_thrust).
+    set steering to desired_thrust.
 
     set last_time to time:seconds.
+
+    pub_sub:publish("/debug/g_drag_thrust", g_drag_thrust).
+    pub_sub:publish("/debug/acc_sp_thrust", acc_sp_thrust).
+    pub_sub:publish("/debug/desired_thrust", desired_thrust).
   
     return 0.
   }

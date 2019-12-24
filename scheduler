@@ -4,19 +4,27 @@
 @lazyglobal off.
 
 local function SchdulerContainer {
-	parameter param_func.
+	parameter param_module.
 	parameter param_interval.
 
 	local last_updated_time is 0.
-	local func is param_func.
+	local module is param_module.
 	local interval is param_interval.
+	local initialized is false.
 
 	// Run the function if time interval is reached.
 	function update {
+		if not initialized { 
+			set initialized to true.
+			if module:haskey("init") {
+				module:init().
+			}
+		}
+
 		local current is time:seconds.
 		if current - last_updated_time > interval {
 			set last_updated_time to current.
-			func().
+			module:run().
 		}
 	}
 
@@ -35,7 +43,7 @@ local function create_scheduler {
 		parameter rate.
 
 		local interval is 1.0 / rate.
-		local container is SchdulerContainer(module:run@, interval).
+		local container is SchdulerContainer(module, interval).
 
 		modules:add(module_name, container).
 	}
