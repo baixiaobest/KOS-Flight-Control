@@ -5,8 +5,9 @@ run once publish_subscribe.
 
 function SubscriptionData {
 	parameter topic.
+	parameter default_value is 0.
 
-	local data is 0.
+	local data is default_value.
 	local data_updated is false.
 
 	function callback {

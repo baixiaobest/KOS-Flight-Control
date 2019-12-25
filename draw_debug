@@ -4,6 +4,7 @@ local function create {
 	local g_drag_thrust_sub is SubscriptionData("/debug/g_drag_thrust").
 	local acc_sp_thrust_sub is SubscriptionData("/debug/acc_sp_thrust").
 	local desired_thrust_sub is SubscriptionData("/debug/desired_thrust").
+	local velocity_sp_sub is SubscriptionData("velocity_setpoint").
 
 	local position_vec to vecdraw(
 			-ship:body:position,
@@ -22,21 +23,29 @@ local function create {
 			1.0,
 			true).
 
-		local acc_vec to vecdraw(
-			V(0,0,0),
-			{return ship:sensors:acc.},
-			rgb(1, 0, 0),
-			"Total acc",
-			1.0,
-			true).
+		// local velocity_setpoint to vecdraw(
+		// 	V(0, 0, 0),
+		// 	{return velocity_sp_sub:get().},
+		// 	rgb(1, 0, 1),
+		// 	"Velocity Setpoint", 
+		// 	1.0,
+		// 	true).
 
-		local g_drag_thrust to vecdraw(
-			V(0, 0, 0),
-			{return g_drag_thrust_sub:get() / (ship:mass * 1e3).},
-			rgb(0, 1, 0),
-			"gravity",
-			1.0,
-			true).
+		// local acc_vec to vecdraw(
+		// 	V(0,0,0),
+		// 	{return ship:sensors:acc.},
+		// 	rgb(1, 0, 0),
+		// 	"Total acc",
+		// 	1.0,
+		// 	true).
+
+		// local g_drag_thrust to vecdraw(
+		// 	V(0, 0, 0),
+		// 	{return g_drag_thrust_sub:get() / (ship:mass * 1e3).},
+		// 	rgb(0, 1, 0),
+		// 	"gravity",
+		// 	1.0,
+		// 	true).
 
 		local acc_sp_thrust to vecdraw(
 			V(0, 0, 0),
@@ -46,16 +55,17 @@ local function create {
 			1.0,
 			true).
 
-		local desired_thrust to vecdraw(
-			V(0, 0, 0),
-			{return desired_thrust_sub:get() / (ship:mass * 1e3).},
-			rgb(1, 1, 0),
-			"desired_thrust",
-			1.0,
-			true).
+		// local desired_thrust to vecdraw(
+		// 	V(0, 0, 0),
+		// 	{return desired_thrust_sub:get() / (ship:mass * 1e3).},
+		// 	rgb(1, 1, 0),
+		// 	"desired_thrust",
+		// 	1.0,
+		// 	true).
 	}
 
 	function run {
+
 	}
 
 	return lexicon(

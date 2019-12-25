@@ -2,24 +2,27 @@
 
 run once subscription_data.
 run once vehicle_parameters.
+run once messages.
 
 function ThrustAttitudeControl {
   // Subscriptions.
-  local thrust_sp_sub is SubscriptionData("acceleration_setpoint").
+  local thrust_sp_sub is SubscriptionData("acceleration_setpoint", AccelerationSetpointMSG(V(0, 0, 0))).
   local throttle_sp is 0.
   local last_time is time:seconds.
   local pub_sub is PublishSubscribe().
   local thrust_integral is V(0, 0, 0).
 
+  // Based on the magnitude of thrust and maximum thrust,
+  // calculate the throttle that can generate to this thrust.
   function get_throttle_from_thrust {
-    parameter thrust.
+    parameter thrust_mag.
 
     local throttle is 0.
     if ship:maxthrust = 0 {
       set throttle to 0.
     }
     else {
-      set throttle to min(1, thrust:mag / (ship:maxthrust * 1e3)).
+      set throttle to min(1, thrust_mag / (ship:maxthrust * 1e3)).
     }
 
     return throttle.
@@ -40,7 +43,7 @@ function ThrustAttitudeControl {
     else if ((thrust_0 - thrust_1):mag < 0.001) {
       return thrust_0:normalized * maximum_thrust.
     }
-    else if (thrust_1:mag:mag < 0.001) {
+    else if (thrust_1:mag < 0.001) {
       return thrust_0:normalized * min(thrust_0:mag, maximum_thrust).
     }
     else if (thrust_0:mag < 0.001) {
@@ -53,12 +56,6 @@ function ThrustAttitudeControl {
       local c is thrust_0 * thrust_0 - (maximum_thrust)^2.
       local alpha is (-b + sqrt(b^2 - 4 * a * c)) / (2 * a).
       return thrust_0 + alpha * thrust_1.
-
-      // local u1 is thrust_1:normalized.
-      // local m is u1 * thrust_0.
-      // local c is thrust_0 * thrust_0 - (maximum_thrust)^2.
-      // local s is -m + sqrt(m * m - c).
-      // return thrust_0 + u1 * s.
     }
   }
 
@@ -82,7 +79,12 @@ function ThrustAttitudeControl {
     local acc_error_thrust is (acc_sp - ship:sensors:acc) * ship:mass * 1e3.
     local desired_thrust is combine_two_thrust(-g_drag_thrust, acc_sp_thrust + acc_error_thrust * vehicle_params:TAC:KP).
 
-    set throttle to get_throttle_from_thrust(desired_thrust).
+    // Code below this line might be separated into actuator module.
+    // Actuator module execute a desired thrust.
+
+    local actual_thrust_mag is desired_thrust:mag * max(0, cos(vang(desired_thrust, curr_thrust))).
+
+    set throttle to get_throttle_from_thrust(actual_thrust_mag).
     // Attitude control.
     set steering to desired_thrust.
 

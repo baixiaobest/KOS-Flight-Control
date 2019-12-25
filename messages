@@ -5,3 +5,9 @@ function AccelerationSetpointMSG {
 
 	return lexicon("acceleration", acceleration).
 }
+
+function VelocitySetpointMSG {
+	parameter velocity is V(0, 0, 0).
+
+	return lexicon("velocity", velocity).
+}
