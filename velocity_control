@@ -18,6 +18,10 @@ function VelocityControl {
 	}
 
 	function run {
+		if not velocity_sub:is_ever_published() {
+			return.
+		}
+
 		local sp_vel is velocity_sub:get():velocity.
 
 		// Constraint the setpint velocity.

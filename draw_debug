@@ -9,13 +9,13 @@ local function create {
 		parameter debug_msg.
 
 		local name is debug_msg:name.
-		local from_vec is debug_msg:from_vec.
-		local to_vec is debug_msg:to_vec.
+		local start is debug_msg:start.
+		local vec is debug_msg:vec.
 		local color is debug_msg:color.
 
 		if vector_debug_name_value_map:haskey(name) {
 			set vector_debug_name_value_map[name] to lexicon(
-				"from_vec", from_vec, "to_vec", to_vec).
+				"start", start, "vec", vec).
 		}
 		else {
 			if color = 0 {
@@ -24,11 +24,11 @@ local function create {
 
 			vector_debug_name_value_map:add(
 				name, 
-				lexicon("from_vec", from_vec, "to_vec", to_vec)).
+				lexicon("start", start, "vec", vec)).
 			
 			vecdraw(
-				{return vector_debug_name_value_map[name]:from_vec.},
-				{return vector_debug_name_value_map[name]:to_vec.},
+				{return vector_debug_name_value_map[name]:start.},
+				{return vector_debug_name_value_map[name]:vec.},
 				color,
 				name,
 				1.0,
@@ -57,14 +57,14 @@ function DrawDebug {
 
 function draw_debug_vector {
 	parameter name.
-	parameter from_vec.
-	parameter to_vec.
+	parameter start.
+	parameter vec.
 	parameter color is 0.
 
 	PublishSubscribe():publish(
 		"/debug/vector", 
 		lexicon("name", name,
-				"from_vec", from_vec,
-				"to_vec", to_vec,
+				"start", start,
+				"vec", vec,
 				"color", color)).
 }

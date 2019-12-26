@@ -11,3 +11,22 @@ function VelocitySetpointMSG {
 
 	return lexicon("velocity", velocity).
 }
+
+function PositinoSetpointMSG {
+	parameter position is V(0, 0, 0).
+
+	return lexicon("position", position).
+}
+
+function LocalPositionMSG {
+	parameter position is V(0, 0, 0).
+
+	return lexicon("position", position).
+}
+
+function LocalPositionSetpointMSG {
+	parameter position is V(0, 0, 0).
+
+	return lexicon(
+		"position", position).
+}

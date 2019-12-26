@@ -91,9 +91,10 @@ function ThrustAttitudeControl {
 
     set last_time to time:seconds.
 
-    draw_debug_vector("g_drag_acc", V(0, 0, 0), g_drag_acc).
-    draw_debug_vector("acc_sp", V(0, 0, 0), acc_sp).
-    draw_debug_vector("desired_thrust_acc", V(0, 0, 0), desired_thrust / (ship:mass * 1e3)).
+    // draw_debug_vector("g_drag_acc", V(0, 0, 0), g_drag_acc).
+    // draw_debug_vector("acc_sp", V(0, 0, 0), acc_sp).
+    // draw_debug_vector("acc", V(0, 0, 0), ship:sensors:acc).
+    // draw_debug_vector("desired_thrust_acc", V(0, 0, 0), desired_thrust / (ship:mass * 1e3)).
   
     return 0.
   }

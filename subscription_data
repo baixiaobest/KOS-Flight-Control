@@ -9,12 +9,14 @@ function SubscriptionData {
 
 	local data is default_value.
 	local data_updated is false.
+	local ever_published is false.
 
 	function callback {
 		parameter new_data.
 
 		set data to new_data.
 		set data_updated to true.
+		set ever_published to true.
 	}
 
 	local subscriber is PublishSubscribe().
@@ -29,8 +31,13 @@ function SubscriptionData {
 		return data_updated.
 	}
 
+	function is_ever_published {
+		return ever_published.
+	}
+
 	return lexicon(
 		"get", get@,
-		"is_updated", is_updated@
+		"is_updated", is_updated@,
+		"is_ever_published", is_ever_published@
 		).
 }
