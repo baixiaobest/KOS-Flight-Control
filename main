@@ -7,6 +7,7 @@ run once thrust_attitude_control.
 run once velocity_control.
 run once position_control.
 run once draw_debug.
+run once subscription_data.
 
 local scheduler_obj is Scheduler(). 
 local pub_sub is PublishSubscribe().
@@ -23,6 +24,6 @@ scheduler_obj:add_module("draw_debug", draw_debug, 10).
 local pos_sp is ship:facing * V(-650, 0, 125).
 
 until false {
-  pub_sub:publish("local_position_setpoint", LocalPositionSetpointMSG(pos_sp)).
-  scheduler_obj:run().
+	pub_sub:publish("local_position_setpoint", LocalPositionSetpointMSG(pos_sp)).
+	scheduler_obj:run().
 }

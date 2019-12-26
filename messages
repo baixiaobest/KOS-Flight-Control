@@ -19,9 +19,13 @@ function PositinoSetpointMSG {
 }
 
 function LocalPositionMSG {
-	parameter position is V(0, 0, 0).
+	parameter local_position is V(0, 0, 0).
+	// Intial position in KSP reference frame.
+	parameter initial_position is V(0, 0, 0).
 
-	return lexicon("position", position).
+	return lexicon(
+		"local_position", local_position,
+		"initial_position", initial_position).
 }
 
 function LocalPositionSetpointMSG {

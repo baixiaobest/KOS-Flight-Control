@@ -9,7 +9,7 @@ local velocity_control_params is lexicon(
 	"KI", 0.1,
 	"KD", 0,
 	"MAX_ACCELERATION", 5,
-	"CRUISE_VELOCITY", 15).
+	"CRUISE_VELOCITY", 30).
 
 local position_control_params is lexicon(
 	"KP", 0.2).

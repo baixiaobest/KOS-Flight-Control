@@ -26,7 +26,7 @@ function PositionControl {
 	function run {
 		// Publish a local ship position.
 		local local_position is initial_position - ship:body:position.
-		pub_sub:publish("local_position", LocalPositionMSG(local_position)).
+		pub_sub:publish("local_position", LocalPositionMSG(local_position, initial_position)).
 
 		// Not to process local position setpoint it if it is not ever published.
 		if not local_position_setpoint_sub:is_ever_published() {
