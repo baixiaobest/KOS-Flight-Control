@@ -3,6 +3,7 @@
 run once subscription_data.
 run once vehicle_parameters.
 run once messages.
+run once draw_debug.
 
 function ThrustAttitudeControl {
   // Subscriptions.
@@ -90,9 +91,9 @@ function ThrustAttitudeControl {
 
     set last_time to time:seconds.
 
-    pub_sub:publish("/debug/g_drag_thrust", g_drag_thrust).
-    pub_sub:publish("/debug/acc_sp_thrust", acc_sp_thrust).
-    pub_sub:publish("/debug/desired_thrust", desired_thrust).
+    draw_debug_vector("g_drag_acc", V(0, 0, 0), g_drag_acc).
+    draw_debug_vector("acc_sp", V(0, 0, 0), acc_sp).
+    draw_debug_vector("desired_thrust_acc", V(0, 0, 0), desired_thrust / (ship:mass * 1e3)).
   
     return 0.
   }

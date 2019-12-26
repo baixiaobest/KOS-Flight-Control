@@ -1,67 +1,43 @@
-run subscription_data.
+run once subscription_data.
+run once publish_subscribe.
 
 local function create {
-	local g_drag_thrust_sub is SubscriptionData("/debug/g_drag_thrust").
-	local acc_sp_thrust_sub is SubscriptionData("/debug/acc_sp_thrust").
-	local desired_thrust_sub is SubscriptionData("/debug/desired_thrust").
-	local velocity_sp_sub is SubscriptionData("velocity_setpoint").
+	local pub_sub is PublishSubscribe().
+	local vector_debug_name_value_map is lexicon().
 
-	local position_vec to vecdraw(
-			-ship:body:position,
-			ship:body:position,
-			rgb(0, 1, 0),
-			"Position",
-			1.0,
-			true).
+	function vector_debug_callback {
+		parameter debug_msg.
+
+		local name is debug_msg:name.
+		local from_vec is debug_msg:from_vec.
+		local to_vec is debug_msg:to_vec.
+		local color is debug_msg:color.
+
+		if vector_debug_name_value_map:haskey(name) {
+			set vector_debug_name_value_map[name] to lexicon(
+				"from_vec", from_vec, "to_vec", to_vec).
+		}
+		else {
+			if color = 0 {
+				set color to rgb(random(), random(), random()).
+			}
+
+			vector_debug_name_value_map:add(
+				name, 
+				lexicon("from_vec", from_vec, "to_vec", to_vec)).
+			
+			vecdraw(
+				{return vector_debug_name_value_map[name]:from_vec.},
+				{return vector_debug_name_value_map[name]:to_vec.},
+				color,
+				name,
+				1.0,
+				true).
+		}
+	}
 
 	function init {
-		local velocity_vec to vecdraw(
-			V(0, 0, 0), 
-			{return ship:velocity:surface.}, 
-			rgb(1, 0, 0),
-			"Surface Velocity",
-			1.0,
-			true).
-
-		// local velocity_setpoint to vecdraw(
-		// 	V(0, 0, 0),
-		// 	{return velocity_sp_sub:get().},
-		// 	rgb(1, 0, 1),
-		// 	"Velocity Setpoint", 
-		// 	1.0,
-		// 	true).
-
-		// local acc_vec to vecdraw(
-		// 	V(0,0,0),
-		// 	{return ship:sensors:acc.},
-		// 	rgb(1, 0, 0),
-		// 	"Total acc",
-		// 	1.0,
-		// 	true).
-
-		// local g_drag_thrust to vecdraw(
-		// 	V(0, 0, 0),
-		// 	{return g_drag_thrust_sub:get() / (ship:mass * 1e3).},
-		// 	rgb(0, 1, 0),
-		// 	"gravity",
-		// 	1.0,
-		// 	true).
-
-		local acc_sp_thrust to vecdraw(
-			V(0, 0, 0),
-			{return acc_sp_thrust_sub:get() / (ship:mass * 1e3).},
-			rgb(0, 0, 1),
-			"acc_sp",
-			1.0,
-			true).
-
-		// local desired_thrust to vecdraw(
-		// 	V(0, 0, 0),
-		// 	{return desired_thrust_sub:get() / (ship:mass * 1e3).},
-		// 	rgb(1, 1, 0),
-		// 	"desired_thrust",
-		// 	1.0,
-		// 	true).
+		pub_sub:subscribe("/debug/vector", vector_debug_callback@).
 	}
 
 	function run {
@@ -77,4 +53,18 @@ local draw_debug_obj is create().
 
 function DrawDebug {
 	return draw_debug_obj.
+}
+
+function draw_debug_vector {
+	parameter name.
+	parameter from_vec.
+	parameter to_vec.
+	parameter color is 0.
+
+	PublishSubscribe():publish(
+		"/debug/vector", 
+		lexicon("name", name,
+				"from_vec", from_vec,
+				"to_vec", to_vec,
+				"color", color)).
 }

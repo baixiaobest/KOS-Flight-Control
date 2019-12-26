@@ -27,6 +27,8 @@ function VelocityControl {
 		pid:set_setpoint(sp_vel).
 
 		local sp_acc is pid:update(ship:velocity:surface).
+
+		// Send the acceleration setpoint to thrust attitude control.
 		pub_sub:publish("acceleration_setpoint", AccelerationSetpointMSG(sp_acc)).
 	}
 
